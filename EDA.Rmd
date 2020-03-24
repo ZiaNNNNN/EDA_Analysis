@@ -1,0 +1,84 @@
+---
+title: "BA_HW3"
+output: html_document
+---
+
+Problem 1: CitiBike anomaly detection & neighborhood usage
+```{r message=FALSE}
+url = "https://raw.githubusercontent.com/jcbonilla/BusinessAnalytics/master/BAData/JC-201709-citibike-tripdata.csv"
+citibike = read.csv(url)
+citibike = as.data.frame(citibike)
+library(R.basic)
+library(lubridate)
+citibike$tripdur_z = zscore(citibike$tripduration, na.rm = TRUE)
+age <- function(dob, age.day = today(), units = "years", floor = TRUE) {
+  calc.age = interval(dob, age.day) / duration(num = 1, units = units)
+  if (floor) return(as.integer(floor(calc.age)))
+  return(calc.age)
+}
+citibike$birth.year = as.Date(citibike$birth.year, "%Y")
+citibike$age = age(citibike$birth.year)
+citibike$age_z = zscore(citibike$age, na.rm = TRUE)
+```
+
+```{r message=FALSE}
+ab_trip = subset(citibike, tripdur_z > 3, select = c(1, 2, 3, 4, 5, 8, 9, 12, 13, 15, 16, 17))
+head(ab_trip)
+nrow(ab_trip)
+```
+
+```{r message=FALSE}
+ab_age = subset(citibike, age_z > 3, select = c(1, 2, 3, 4, 5, 8, 9, 12, 13, 15, 17, 18))
+head(ab_age)
+nrow(ab_age)
+```
+
+
+```{r message=FALSE}
+age_80 = subset(citibike, age > 80)
+nrow(age_80)
+```
+
+
+There are 119 clients with age greater than 70, which contribute about 3.6% of total clients. And there are 37 
+clients with age greater than 80, which contribut about 1.1% of total clients. Alought senior clients does not
+contribute large part of clients, citibike should not ignore the corresponding policy regarding these age groups.
+Citibike should give safety instruction to senior clients before their rides such as wearing halmet and following 
+speed limitation. Also, providing recommendate corresponding injuring insurance to senior clients can minimize the 
+cost in case of injuring during rides. 
+
+```{r message=FALSE}
+nrow(ab_trip)
+```
+Citibike should pay more attentaion on trips with anomalies. Specifically, there are 32 trips with during more than
+12 hours. Although this is not a large amout, citibike should keep monitoring such long trips and consider about 
+charge additional penalty fee to these trips. Having too many such long trips is harmful for the inventory.
+
+![fatal vs. non-fatal crashes in the US](/Users/zianzhang/Desktop/nyu/business_analytics/HW3/WechatIMG6.png)
+Also, the average trip duration for clients age greater or equals to 120 and age lower than 20 are extremely high,
+so we should consider about ignore these data because of the number of clients from these age groups only 
+contribute a little percentage of total clients.
+
+
+Problem 2: Aviation Accidents
+```{r message=FALSE}
+url2 = "https://raw.githubusercontent.com/jcbonilla/BusinessAnalytics/master/BAData/aviation.csv"
+aviation = read.csv(url2)
+aviation = as.data.frame(aviation)
+aviation$fetal_status = gsub("[0-9]*", "", aviation$Injury.Severity)
+aviation$fetal_status = gsub("[[:punct:]]", " ", aviation$fetal_status)
+
+aviation$Date_Year = substring(aviation$Event.Date, 8, 11) 
+aviation$Date_Year = as.Date(aviation$Date_Year, "%Y")
+write.csv(aviation, "/Users/zianzhang/Desktop/nyu/business_analytics/HW3/aviation_rev.csv")
+```
+
+![fatal vs. non-fatal crashes in the US](/Users/zianzhang/Desktop/nyu/business_analytics/HW3/WechatIMG3.png)
+
+![fatal vs. non-fatal crashes in the US from the 1940s through 2013.](/Users/zianzhang/Desktop/nyu/business_analytics/HW3/WechatIMG4.png)
+
+
+
+
+Problem 3: Retail Targets
+![10-year percent change in demographics.](/Users/zianzhang/Desktop/nyu/business_analytics/HW3/WechatIMG5.png)
